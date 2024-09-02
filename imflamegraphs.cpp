@@ -229,9 +229,15 @@ namespace ImFlameGraphs
             ImGui::ItemSize(ImVec2(max_width, block_height), 0);
         }
 
+#if FLIP
         ImVec2 origin = ImVec2(
             window->DC.CursorPos.x - window->WindowPadding.x,
             std::max(window->DC.CursorPos.y, window->Pos.y + size.y - g.Style.FramePadding.y));
+#else
+        ImVec2 origin = ImVec2(
+            window->DC.CursorStartPos.x,
+            window->DC.CursorStartPos.y);
+#endif
 
         ImFlameGraphItem* base_item = data->GetFocusItem();
         float base_start = base_item->Start();
@@ -252,8 +258,11 @@ namespace ImFlameGraphs
                 float min_percentage = 8.0f / max_width;
 
                 ImVec2 origin_offset = origin;
+#if FLIP
                 origin_offset.y -= height;
-
+#else
+                origin_offset.y += height;
+#endif
                 float scale = 1.0f / (base_end - base_start);
                 float offset = base_start;
 
@@ -265,8 +274,13 @@ namespace ImFlameGraphs
                     return;
                 }
 
-                auto pos0 = origin_offset + ImVec2(width * start,   -block_height   ) + padding;
-                auto pos1 = origin_offset + ImVec2(width * end,     0.0f            ) - padding;
+#if FLIP
+                auto pos0 = origin_offset + ImVec2(width * start,   -block_height) + padding;
+                auto pos1 = origin_offset + ImVec2(width * end, 0.0f) - padding;
+#else
+                auto pos0 = origin_offset + ImVec2(width * start, 0.0f) + padding;
+                auto pos1 = origin_offset + ImVec2(width * end, block_height) - padding;
+#endif
 
                 ImRect bb(pos0, pos1);
                 if (!ImGui::ItemAdd(bb, 0))
